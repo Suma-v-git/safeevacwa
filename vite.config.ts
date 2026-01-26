@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
+    build: {
+      chunkSizeWarningLimit: 1600,
+    },
     plugins: [
       basicSsl(), // Generate self-signed SSL certificate
       react(),
