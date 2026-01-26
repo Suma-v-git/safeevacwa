@@ -2,6 +2,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import dotenv from 'dotenv';
 import express from 'express';
+import serverless from 'serverless-http';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
@@ -281,6 +282,13 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+// Only start the server if file is executed directly (local development)
+if (process.env.NODE_ENV !== 'production' || process.argv[1] === fileURLToPath(import.meta.url)) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
+
+// Export for Vercel
+export const handler = serverless(app);
+export default app;
