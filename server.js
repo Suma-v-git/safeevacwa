@@ -42,19 +42,52 @@ app.use((req, res, next) => {
 });
 
 // Connect to MongoDB
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/safe';
-mongoose.connect(MONGODB_URI, {
-    directConnection: MONGODB_URI.includes('127.0.0.1') ? true : false,
-    serverSelectionTimeoutMS: 30000
-})
-    .then(() => console.log(`MongoDB connected to: ${MONGODB_URI.split('@').pop().split('/')[0]}`))
-    .catch(err => console.error('MongoDB connection error:', err));
+// MongoDB Connection caching
+let cached = global.mongoose;
+
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectToDatabase() {
+    if (cached.conn) {
+        return cached.conn;
+    }
+
+    if (!cached.promise) {
+        const opts = {
+            bufferCommands: false,
+            serverSelectionTimeoutMS: 5000 // Lower timeout to fail fast
+        };
+
+        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+            console.log('✅ New MongoDB connection established');
+            return mongoose;
+        });
+    }
+
+    try {
+        cached.conn = await cached.promise;
+    } catch (e) {
+        cached.promise = null;
+        console.error('❌ MongoDB connection error:', e);
+        throw e;
+    }
+
+    return cached.conn;
+}
+
+// Connect immediately for local dev, but for serverless we'll call it in the route
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    connectToDatabase().catch(console.error);
+}
 
 // Routes
 
 // Signup
 app.post('/api/signup', async (req, res) => {
     try {
+        await connectToDatabase();
         const { name, email, password } = req.body;
 
         // Check if user exists
@@ -76,6 +109,7 @@ app.post('/api/signup', async (req, res) => {
 // Login
 app.post('/api/login', async (req, res) => {
     try {
+        await connectToDatabase();
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
@@ -98,6 +132,7 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/profile/:email', async (req, res) => {
     console.log(`GET /api/profile/${req.params.email}`);
     try {
+        await connectToDatabase();
         const user = await User.findOne({ email: req.params.email });
         if (!user) {
             console.log("User not found in DB");
@@ -120,6 +155,7 @@ app.get('/api/profile/:email', async (req, res) => {
 app.put('/api/profile/:email', async (req, res) => {
     console.log(`PUT /api/profile/${req.params.email}`);
     try {
+        await connectToDatabase();
         const { name, password, emergencyEmail1, emergencyEmail2 } = req.body;
         const user = await User.findOneAndUpdate(
             { email: req.params.email },
@@ -141,6 +177,7 @@ app.put('/api/profile/:email', async (req, res) => {
 app.post('/api/sos', async (req, res) => {
     console.log("SOS Alert Triggered");
     try {
+        await connectToDatabase();
         const { email, location } = req.body;
 
         // Find user to get emergency email
@@ -254,6 +291,7 @@ app.post('/api/sos', async (req, res) => {
 // Add Shelter
 app.post('/api/shelters', async (req, res) => {
     try {
+        await connectToDatabase();
         const shelterData = req.body;
         const newShelter = new Shelter(shelterData);
         await newShelter.save();
@@ -266,6 +304,7 @@ app.post('/api/shelters', async (req, res) => {
 // Get Shelters
 app.get('/api/shelters', async (req, res) => {
     try {
+        await connectToDatabase();
         const shelters = await Shelter.find();
         res.json(shelters);
     } catch (error) {
