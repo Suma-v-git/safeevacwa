@@ -273,8 +273,8 @@ app.get('/api/shelters', async (req, res) => {
     }
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
+// Serve static files in production (only when NOT on Vercel)
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
     app.use(express.static(join(__dirname, 'dist')));
 
     app.get('/(.*)', (req, res) => {
