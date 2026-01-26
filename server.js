@@ -60,7 +60,7 @@ async function connectToDatabase() {
             serverSelectionTimeoutMS: 5000 // Lower timeout to fail fast
         };
 
-        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+        cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
             console.log('✅ New MongoDB connection established');
             return mongoose;
         });
