@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { Shelter } from './models/Shelter.js';
 dotenv.config();

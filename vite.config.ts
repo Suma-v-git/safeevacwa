@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['safeevac-192.png', 'safeevac-512.png', 'safeevac-apple.png', 'safeevac-favicon.ico'],
+        manifestFilename: 'manifest.webmanifest',
         manifest: {
           name: 'SafeEvac AI Emergency Assistant',
           short_name: 'SafeEvac Mobile',
