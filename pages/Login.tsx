@@ -16,6 +16,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   // Clear messages when switching modes
   useEffect(() => {
+    console.log("[Login] Mode changed. isRegistering:", isRegistering);
     setError('');
     setSuccess('');
     setEmail('');
@@ -25,6 +26,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[Login] Form submitted. isRegistering:", isRegistering);
+    window.alert(`Form submitted! isRegistering: ${isRegistering}`);
     setError('');
     setSuccess('');
 
@@ -36,7 +39,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   const handleRegister = async () => {
+    console.log("[Login] handleRegister called with:", { name, email });
     try {
+      console.log("[Login] Fetching signup from:", API_ENDPOINTS.signup);
       const response = await fetch(API_ENDPOINTS.signup, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,8 +202,13 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <div className="mt-8 flex flex-col gap-3">
               <button
-                onClick={() => setIsRegistering(!isRegistering)}
+                onClick={() => {
+                  console.log("[Login] Toggling isRegistering. Current:", isRegistering);
+                  window.alert(`Toggling to ${!isRegistering ? 'Register' : 'Login'}`);
+                  setIsRegistering(!isRegistering);
+                }}
                 className="w-full flex justify-center py-3 px-4 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                type="button"
               >
                 {isRegistering ? 'Back to Login' : 'Create Free Account'}
               </button>
