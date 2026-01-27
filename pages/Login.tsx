@@ -48,47 +48,53 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || `Registration failed with status ${response.status}.`);
-        return;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        if (!response.ok) {
+          setError(data.message || `Registration failed: ${response.status}`);
+          return;
+        }
+        setSuccess('Account registered successfully! Please sign in.');
+        setIsRegistering(false);
+      } else {
+        const text = await response.text();
+        console.error("[Login] Received non-JSON response:", text);
+        setError(`Server error (${response.status}): The server did not return JSON. This often means the backend crashed or the database connection failed.`);
       }
-
-      setSuccess('Account registered successfully! Please sign in.');
-      setIsRegistering(false);
     } catch (err: any) {
       console.error("Register fetch error:", err);
-      setError(`Failed to connect to the server at ${API_ENDPOINTS.signup}. Error: ${err.message || 'Check if server is running'}`);
+      setError(`Connection Error: ${err.message || 'Check your internet or server status'}`);
     }
   };
 
   const handleLoginAuth = async () => {
     try {
+      console.log("[Login] Fetching login from:", API_ENDPOINTS.login);
       const response = await fetch(API_ENDPOINTS.login, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || `Login failed with status ${response.status}.`);
-        return;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        if (!response.ok) {
+          setError(data.message || `Login failed: ${response.status}`);
+          return;
+        }
+        setSuccess('Login successful! Redirecting...');
+        localStorage.setItem('safeevac_current_user_email', email);
+        setTimeout(() => onLogin(), 1500);
+      } else {
+        const text = await response.text();
+        console.error("[Login] Received non-JSON response:", text);
+        setError(`Server error (${response.status}): Non-JSON response received.`);
       }
-
-      // Success
-      setSuccess('Login successful! Redirecting...');
-      localStorage.setItem('safeevac_current_user_email', email);
-
-      setTimeout(() => {
-        onLogin();
-      }, 1500);
-
     } catch (err: any) {
       console.error("Login fetch error:", err);
-      setError(`Failed to connect to the server at ${API_ENDPOINTS.login}. Error: ${err.message || 'Is the server running?'}`);
+      setError(`Connection Error: ${err.message}`);
     }
   };
 
