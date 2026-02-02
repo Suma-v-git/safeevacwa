@@ -55,8 +55,10 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
           setError(data.message || `Registration failed: ${response.status}`);
           return;
         }
-        setSuccess('Account registered successfully! Please sign in.');
-        setIsRegistering(false);
+        // Auto-login after successful registration
+        setSuccess('Account created successfully! Logging you in...');
+        localStorage.setItem('safeevac_current_user_email', email);
+        setTimeout(() => onLogin(), 1500);
       } else {
         const text = await response.text();
         console.error("[Login] Received non-JSON response:", text);
