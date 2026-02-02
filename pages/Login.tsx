@@ -52,6 +52,15 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
       if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
         if (!response.ok) {
+          // Check if user already exists
+          if (data.message && data.message.toLowerCase().includes('already exists')) {
+            setSuccess('Account already exists! Redirecting to login...');
+            setTimeout(() => {
+              setIsRegistering(false);
+              setSuccess('');
+            }, 1500);
+            return;
+          }
           setError(data.message || `Registration failed: ${response.status}`);
           return;
         }
