@@ -27,7 +27,6 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("[Login] Form submitted. isRegistering:", isRegistering);
-    window.alert(`Form submitted! isRegistering: ${isRegistering}`);
     setError('');
     setSuccess('');
 
@@ -221,7 +220,6 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <button
                 onClick={() => {
                   console.log("[Login] Toggling isRegistering. Current:", isRegistering);
-                  window.alert(`Toggling to ${!isRegistering ? 'Register' : 'Login'}`);
                   setIsRegistering(!isRegistering);
                 }}
                 className="w-full flex justify-center py-3 px-4 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
